@@ -19,7 +19,7 @@ function verifySlackRequest(req, res, buf) {
 }
 
 app.post("/slack/events", (req, res) => {
-  const { type, event } = req.body;
+  const { type, event, challenge } = req.body;
 
   if (type === "url_verification") {
     return res.status(200).send(challenge);
