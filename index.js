@@ -34,5 +34,67 @@ app.post("/slack/events", (req, res) => {
   res.status(200).send("OK");
 });
 
+//
+app.post("/register", async (req, res) => {
+  const { text, user_name } = req.body;
+
+  try {
+    // 1. 파싱
+    const parts = text.trim().split(" ");
+    if (parts.length < 3) {
+      return res.send(
+        "❗ 올바른 형식: `/문제등록 차수 난이도 링크 [문제명(선택)]`"
+      );
+    }
+
+    const [차수, 난이도, 링크, ...문제명Arr] = parts;
+    const 문제명 = 문제명Arr.length > 0 ? 문제명Arr.join(" ") : "";
+
+    if (!링크.startsWith("http")) {
+      return res.send("❗ 문제 링크 형식이 잘못되었습니다.");
+    }
+
+    // 2. 날짜 포맷
+    const now = new Date();
+    const week = ["일", "월", "화", "수", "목", "금", "토"];
+    const formattedDate = now
+      .toLocaleDateString("ko-KR")
+      .replace(/\./g, "/")
+      .replace(/ /g, "")
+      .replace(/\/$/, "");
+    const dayName = week[now.getDay()];
+    const 날짜 = `${formattedDate} (${dayName}) ${차수}`;
+
+    // 3. 중복 체크
+    const existing = await notion.databases.query({
+      database_id: databaseId,
+      filter: {
+        property: "링크",
+        url: { equals: 링크 },
+      },
+    });
+
+    if (existing.results.length > 0) {
+      return res.send("🚫 이미 등록된 문제입니다.");
+    }
+
+    // 4. Notion에 등록
+    await notion.pages.create({
+      parent: { database_id: databaseId },
+      properties: {
+        날짜: { title: [{ text: { content: 날짜 } }] },
+        문제: { rich_text: [{ text: { content: 문제명 } }] },
+        난이도: { select: { name: 난이도 } },
+        링크: { url: 링크 },
+      },
+    });
+
+    res.send(`✅ 문제 등록 완료: ${문제명 || "(문제명 없음)"}`);
+  } catch (err) {
+    console.error(err);
+    res.send("🚨 문제 등록 중 오류가 발생했습니다.");
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 서버 on (포트: ${PORT})`));
