@@ -1,11 +1,15 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const { Client } = require("@notionhq/client");
 const crypto = require("crypto");
 require("dotenv").config();
 
 const app = express();
 app.use(bodyParser.json({ verify: verifySlackRequest })); // ✅ JSON 요청 (예: 이벤트 API 대응용)
 app.use(bodyParser.urlencoded({ extended: true })); // ✅ 폼 요청 (슬래시 커맨드 대응용)
+
+const notion = new Client({ auth: process.env.NOTION_TOKEN });
+const databaseId = process.env.NOTION_DATABASE_ID;
 
 function verifySlackRequest(req, res, buf) {
   const signature = req.headers["x-slack-signature"];

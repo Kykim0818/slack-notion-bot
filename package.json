@@ -6,6 +6,7 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "@notionhq/client": "^2.3.0",
     "body-parser": "^1.20.2",
     "crypto": "^1.0.1",
     "dotenv": "^16.3.1",
