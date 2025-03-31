@@ -1,11 +1,11 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: true }));
 const crypto = require("crypto");
 require("dotenv").config();
 
 const app = express();
-app.use(bodyParser.json({ verify: verifySlackRequest }));
+app.use(bodyParser.json({ verify: verifySlackRequest })); // ✅ JSON 요청 (예: 이벤트 API 대응용)
+app.use(bodyParser.urlencoded({ extended: true })); // ✅ 폼 요청 (슬래시 커맨드 대응용)
 
 function verifySlackRequest(req, res, buf) {
   const signature = req.headers["x-slack-signature"];
@@ -38,8 +38,6 @@ app.post("/slack/events", (req, res) => {
 //
 app.post("/register", async (req, res) => {
   console.log("🔥 req.body:", req.body);
-  const { user_name } = req.body;
-
   const text = req.body.text || "";
   if (!text.trim()) {
     return res.send("❗ 텍스트 입력이 비어 있습니다.");
