@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({ extended: true }));
 const crypto = require("crypto");
 require("dotenv").config();
 
@@ -36,7 +37,13 @@ app.post("/slack/events", (req, res) => {
 
 //
 app.post("/register", async (req, res) => {
-  const { text, user_name } = req.body;
+  console.log("🔥 req.body:", req.body);
+  const { user_name } = req.body;
+
+  const text = req.body.text || "";
+  if (!text.trim()) {
+    return res.send("❗ 텍스트 입력이 비어 있습니다.");
+  }
 
   try {
     // 1. 파싱
