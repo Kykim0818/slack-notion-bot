@@ -22,12 +22,13 @@ app.post("/slack/events", (req, res) => {
   const { type, event } = req.body;
 
   if (type === "url_verification") {
-    return res.send({ challenge: req.body.challenge });
+    return res.status(200).send(challenge);
   }
 
   if (event && event.type === "message" && !event.bot_id) {
     console.log("✅ 메시지 수신:", event.text);
     console.log("📸 첨부파일:", event.files);
+    console.log("👤 보낸 사람:", event.user);
   }
 
   res.status(200).send("OK");
